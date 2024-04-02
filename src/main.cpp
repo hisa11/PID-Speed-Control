@@ -4,15 +4,15 @@
 int suuti = 0;
 int gohan = 0;
 int sokudo = 0;
-int mokuhyou = 5000;
+int mokuhyou = 0;
 BufferedSerial pc(USBTX, USBRX, 115200);
 CAN can(PA_11, PA_12, (int)1e6);
 uint8_t DATA[8] = {};
 
 // PID controller parameters
 const float kp = 0.01;
-const float ki = 0.016;
-const float kd = 0.001;
+const float ki = 0.014;
+const float kd = 0.07;
 const float sample_time = 0.02; // 20ms sample time
 
 // Create PID controller
@@ -39,6 +39,12 @@ int main()
             {
                 mokuhyou = 9000;
             }
+            else if(buf == 'm'){
+                mokuhyou = -9000;
+            }
+            else if(buf == 'o'){
+                mokuhyou =0;
+            }
         }
 
 
@@ -54,6 +60,9 @@ int main()
         if (can.read(msg))
         {
             sokudo = (msg.data[2] << 8) | msg.data[3];
+            if(sokudo > 40000){
+                sokudo = sokudo - 65536;
+            }
             printf("sokudo : %d\n", sokudo);
         }
         ThisThread::sleep_for(20ms);
