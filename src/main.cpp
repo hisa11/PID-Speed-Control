@@ -3,20 +3,22 @@
 
 int suuti = 0;
 int gohan = 0;
-int sokudo = 0;
+int16_t sokudo = 0;
+int16_t sokudo1 = 0;
 int mokuhyou = 0;
 BufferedSerial pc(USBTX, USBRX, 115200);
 CAN can(PA_11, PA_12, (int)1e6);
 uint8_t DATA[8] = {};
 
 // PID controller parameters
-const float kp = 0.01;
-const float ki = 0.014;
-const float kd = 0.07;
+const float kp = 0.6;
+const float ki = 0.1;
+const float kd = 0.01;
 const float sample_time = 0.02; // 20ms sample time
 
 // Create PID controller
 PID pid_controller(kp, ki, kd, sample_time);
+PID pid_controller1(kp, ki, kd, sample_time);
 
 int main()
 {
@@ -39,31 +41,43 @@ int main()
             {
                 mokuhyou = 9000;
             }
-            else if(buf == 'm'){
+            else if (buf == 'm')
+            {
                 mokuhyou = -9000;
             }
-            else if(buf == 'o'){
-                mokuhyou =0;
+            else if (buf == 'o')
+            {
+                mokuhyou = 0;
             }
         }
 
-
         // Calculate PID output
         float output = pid_controller.calculate(mokuhyou, sokudo);
+        float output1 = pid_controller1.calculate(mokuhyou, sokudo1);
 
         int16_t output_int16 = static_cast<int16_t>(output);
-        DATA[0] = output_int16 >> 8; // MSB
+        DATA[0] = output_int16 >> 8;   // MSB
         DATA[1] = output_int16 & 0xFF; // LSB
+
+        int16_t output_int16 = static_cast<int16_t>(output1);
+        DATA[2] = output_int16 >> 8;   // MSB
+        DATA[3] = output_int16 & 0xFF; // LSB
 
         CANMessage msg0(0x200, DATA, 8);
         can.write(msg0);
-        if (can.read(msg))
+        if (can.read(msg) && msg.id == 0x201)
+        { // CAN ID 1のメッセージをチェック
+            // msg.dataを適切な変数に格納
+            int8_t h_rank= msg.data[2];
+            int8_t l_rank= msg.data[3];
+            sokudo = (h_rank << 8) | l_rank;
+            // dataValueを使用した処理...
+        }
+        if(can.read(msg) && msg.id == 0x202)
         {
-            sokudo = (msg.data[2] << 8) | msg.data[3];
-            if(sokudo > 40000){
-                sokudo = sokudo - 65536;
-            }
-            printf("sokudo : %d\n", sokudo);
+            int8_t h_rank= msg.data[2];
+            int8_t l_rank= msg.data[3];
+            sokudo1 = (h_rank << 8) | l_rank;
         }
         ThisThread::sleep_for(20ms);
     }
