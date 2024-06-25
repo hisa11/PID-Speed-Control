@@ -68,15 +68,15 @@ int main()
         if (can.read(msg) && msg.id == 0x201)
         { // CAN ID 1のメッセージをチェック
             // msg.dataを適切な変数に格納
-            int8_t h_rank= msg.data[2];
-            int8_t l_rank= msg.data[3];
+            int8_t h_rank = msg.data[2];
+            int8_t l_rank = msg.data[3];
             sokudo = (h_rank << 8) | l_rank;
             // dataValueを使用した処理...
         }
-        if(can.read(msg) && msg.id == 0x202)
+        if (can.read(msg) && msg.id == 0x202)
         {
-            int8_t h_rank= msg.data[2];
-            int8_t l_rank= msg.data[3];
+            int8_t h_rank = msg.data[2];
+            int8_t l_rank = msg.data[3];
             sokudo1 = (h_rank << 8) | l_rank;
         }
         ThisThread::sleep_for(20ms);
