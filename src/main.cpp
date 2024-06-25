@@ -59,9 +59,9 @@ int main()
         DATA[0] = output_int16 >> 8;   // MSB
         DATA[1] = output_int16 & 0xFF; // LSB
 
-        int16_t output_int16 = static_cast<int16_t>(output1);
-        DATA[2] = output_int16 >> 8;   // MSB
-        DATA[3] = output_int16 & 0xFF; // LSB
+        int16_t output1_int16 = static_cast<int16_t>(output1);
+        DATA[2] = output1_int16 >> 8;   // MSB
+        DATA[3] = output1_int16 & 0xFF; // LSB
 
         CANMessage msg0(0x200, DATA, 8);
         can.write(msg0);
