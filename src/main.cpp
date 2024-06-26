@@ -11,9 +11,9 @@ CAN can(PA_11, PA_12, (int)1e6);
 uint8_t DATA[8] = {};
 
 // PID controller parameters
-const float kp = 0.6;
-const float ki = 0.1;
-const float kd = 0.01;
+const float kp = 0.4;
+const float ki = 0.5;
+const float kd = 0.001;
 const float sample_time = 0.02; // 20ms sample time
 
 // Create PID controller
@@ -24,7 +24,7 @@ int main()
 {
     while (1)
     {
-        CANMessage msg;
+        CANMessage msg, msg1, msg2;
         if (pc.readable())
         {
             char buf;
@@ -65,20 +65,20 @@ int main()
 
         CANMessage msg0(0x200, DATA, 8);
         can.write(msg0);
-        if (can.read(msg) && msg.id == 0x201)
+        if (can.read(msg1) && msg1.id == 0x201)
         { // CAN ID 1のメッセージをチェック
             // msg.dataを適切な変数に格納
-            int8_t h_rank = msg.data[2];
-            int8_t l_rank = msg.data[3];
-            sokudo = (h_rank << 8) | l_rank;
+            
+            sokudo = (msg1.data[2] << 8) | msg1.data[3];
             // dataValueを使用した処理...
         }
-        if (can.read(msg) && msg.id == 0x202)
+        if (can.read(msg2) && msg2.id == 0x202)
         {
-            int8_t h_rank = msg.data[2];
-            int8_t l_rank = msg.data[3];
-            sokudo1 = (h_rank << 8) | l_rank;
+            // int8_t h_rank = msg2.data[2];
+            // int8_t l_rank = msg2.data[3];
+            sokudo1 = (msg2.data[2] << 8) | msg2.data[3];
         }
+        printf("sokudo = %d , sokudo1 = %d\n", sokudo,sokudo1);
         ThisThread::sleep_for(20ms);
     }
 }
